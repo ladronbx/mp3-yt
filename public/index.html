@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descargar YouTube a MP3</title>
+    <title>Descargar YouTube</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -16,12 +16,16 @@
 
 <body>
     <div class="container">
-        <h1>Transforma tu video de YouTube y descárgalo a MP3</h1>
+        <h1>Transforma tu video de YouTube y descárgalo</h1>
         <div id="inputContainer">
             <input type="text" id="videoUrl" placeholder="Pega el enlace de YouTube aquí">
-            <button id="downloadBtn" onclick="downloadMp3()">Descargar MP3</button>
+            <button id="searchBtn" onclick="searchVideo()">Buscar</button>
         </div>
-        <span id="statusMessage"></span> <!-- 🔹 Mensaje de estado -->
+        <div id="downloadOptions" class="hidden">
+            <button onclick="download('mp3')">Descargar MP3</button>
+            <button onclick="download('mp4')">Descargar MP4</button>
+        </div>
+        <span id="statusMessage"></span>
     </div>
 
     <script>
@@ -30,54 +34,49 @@
             return regex.test(url);
         }
 
-        async function downloadMp3() {
+        function searchVideo() {
             const url = document.getElementById("videoUrl").value;
-            const button = document.getElementById("downloadBtn");
             const statusMessage = document.getElementById("statusMessage");
-            const inputContainer = document.getElementById("inputContainer");
+            const downloadOptions = document.getElementById("downloadOptions");
 
             if (!url || !isValidYouTubeUrl(url)) {
                 alert("Ingresa un enlace válido de YouTube");
                 return;
             }
+            
+            statusMessage.innerText = "✅ Video encontrado. Elige el formato de descarga.";
+            downloadOptions.classList.remove("hidden");
+        }
 
-            // 🔹 Oculta el input y botón al iniciar la descarga
-            inputContainer.classList.add("hidden");
-            statusMessage.innerText = "⚠️ No cierres ni refresques la página. Procesando el audio...";
+        async function download(format) {
+            const url = document.getElementById("videoUrl").value;
+            const statusMessage = document.getElementById("statusMessage");
+            
+            statusMessage.innerText = `⚠️ Descargando en formato ${format.toUpperCase()}...`;
 
             try {
                 const response = await fetch("/download", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ url })
+                    body: JSON.stringify({ url, format })
                 });
 
                 if (response.ok) {
                     const blob = await response.blob();
                     const link = document.createElement("a");
                     link.href = window.URL.createObjectURL(blob);
-
-                    const filename = response.headers.get("X-Filename") || "audio.mp3";
+                    const filename = response.headers.get("X-Filename") || `video.${format}`;
                     link.download = filename;
                     link.click();
 
                     statusMessage.innerText = "✅ Descarga completada. Puedes buscar otro video.";
                 } else {
-                    throw new Error("Error al descargar el audio");
+                    throw new Error("Error al descargar el archivo");
                 }
             } catch (error) {
-                statusMessage.innerText = "❌ Error al descargar el audio.";
+                statusMessage.innerText = "❌ Error al descargar el archivo.";
             }
-
-            // 🔹 Restablece el input y botón para otra búsqueda
-            setTimeout(() => {
-                inputContainer.classList.remove("hidden");
-                statusMessage.innerText = ""; // Limpia el mensaje
-                document.getElementById("videoUrl").value = ""; // Limpia el input
-            }, 3000); // Espera 3 segundos antes de mostrar nuevamente
         }
     </script>
-
 </body>
-
 </html>
