@@ -8,9 +8,10 @@ Bienvenido a **MP3-YT**, una aplicación web diseñada con **fines educativos** 
 
 🛑 **MP3-YT no debe usarse para descargar contenido protegido por derechos de autor sin autorización.**  
 
-Este software está diseñado para **uso personal y legal**, únicamente con contenido del cual poseas los derechos necesarios. **No fomentamos ni apoyamos la piratería ni el uso ilegal de contenido protegido.**  
+Este software está diseñado exclusivamente para **uso personal y legal**, con contenido del cual poseas los derechos necesarios.  
 
-📢 **El uso indebido de esta herramienta es responsabilidad exclusiva del usuario.**  
+🔴 **No fomentamos ni apoyamos la piratería ni el uso ilegal de contenido protegido.**  
+📢 **El usuario es el único responsable del uso que haga de esta aplicación.**  
 
 ---
 
@@ -25,11 +26,14 @@ Este software está diseñado para **uso personal y legal**, únicamente con con
 
 ## 🎵 **Detección Inteligente de Playlists**  
 
-MP3-YT es capaz de **identificar automáticamente si el enlace ingresado pertenece a una playlist de YouTube**. En ese caso, la aplicación te ofrecerá una opción especial para gestionar la descarga de varios audios de manera más eficiente.  
+MP3-YT es capaz de **identificar automáticamente si el enlace ingresado pertenece a una playlist de YouTube**. Si esto ocurre, la aplicación te brindará una opción especial para gestionar la descarga de varios audios de manera más eficiente.  
 
-📢 **Importante:** Esta funcionalidad está integrada en la aplicación y debe usarse con responsabilidad. **No está permitido descargar contenido sin autorización.**  
+⚠️ **IMPORTANTE:**  
+- Esta funcionalidad está integrada en la aplicación y **debe usarse de forma responsable**.  
+- **No se permite descargar contenido sin autorización del propietario de los derechos.**  
+- El usuario **debe asegurarse de cumplir con la legalidad vigente** en su país.  
 
-Para más detalles, descarga el repositorio y pruébalo por ti mismo.  
+📌 **Para más detalles, descarga el repositorio y pruébalo por ti mismo.**  
 
 ---
 
@@ -102,7 +106,7 @@ Si tienes ideas para mejorar el proyecto, ¡envía un pull request o reporta un 
 ---
 
 ## 📜 **Licencia**  
-Este proyecto está bajo la **Licencia ISC**.  
+Este proyecto está bajo la **Licencia MIT**, lo que significa que puedes usar, modificar y compartir el código, pero siempre **bajo tu propia responsabilidad**.  
 
 ---
 📩 **Contacto:** ladronbienve@gmail.com  
