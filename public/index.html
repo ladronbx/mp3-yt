@@ -22,9 +22,11 @@
 
         <div id="videoContainer" class="hidden">
             <img id="videoThumbnail" class="thumbnail" src="" alt="Miniatura del video">
+            <h2>Selecciona el formato para la descarga</h2>
             <div id="downloadOptions">
-                <button onclick="download('mp3')">Descargar MP3</button>
-                <button onclick="download('mp4')">Descargar MP4</button>
+                <button onclick="download('mp3')">MP3</button>
+                <button onclick="download('mp4')">MP4</button>
+                <button onclick="download('both')">MP3 & MP4</button>
             </div>
         </div>
 
@@ -63,41 +65,41 @@
             document.getElementById("inputContainer").classList.add("hidden");
             document.getElementById("videoContainer").classList.remove("hidden");
         }
-        
-        async function download(format) {
-            const url = document.getElementById("videoUrl").value;
-            const statusMessage = document.getElementById("statusMessage");
-            statusMessage.innerText = `⚠️ Descargando en formato ${format.toUpperCase()}...`;
 
-            try {
-                const response = await fetch("/download", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ url, format })
-                });
+    async function download(format) {
+        const url = document.getElementById("videoUrl").value;
+        const statusMessage = document.getElementById("statusMessage");
+        statusMessage.innerText = `⚠️ Descargando en formato ${format.toUpperCase()}...`;
 
-                if (!response.ok) throw new Error("Error al descargar el archivo");
+        try {
+            const response = await fetch("/download", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url, format })
+            });
 
-                // Convertir respuesta a Blob
-                const blob = await response.blob();
-                const filename = response.headers.get("X-Filename") || `video.${format}`;
-                
-                // Crear enlace para descargar
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            if (!response.ok) throw new Error("Error al descargar el archivo");
 
-                statusMessage.innerText = "✅ Descarga completada. ¿Deseas buscar otro video?";
-                document.getElementById("videoContainer").classList.add("hidden");
-                document.getElementById("confirmationScreen").classList.remove("hidden");
+            // Convertir respuesta a Blob
+            const blob = await response.blob();
+            const filename = response.headers.get("X-Filename") || (format === "both" ? "video_audio.zip" : `video.${format}`);
 
-            } catch (error) {
-                statusMessage.innerText = "❌ Error al descargar el archivo.";
-            }
+            // Crear enlace para descargar y permitir seleccionar carpeta
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            statusMessage.innerText = "✅ Descarga completada. ¿Deseas buscar otro video?";
+            document.getElementById("videoContainer").classList.add("hidden");
+            document.getElementById("confirmationScreen").classList.remove("hidden");
+
+        } catch (error) {
+            statusMessage.innerText = "❌ Error al descargar el archivo.";
         }
+    }
         
         function resetSearch() {
             document.getElementById("confirmationScreen").classList.add("hidden");
