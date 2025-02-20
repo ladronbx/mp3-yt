@@ -1,0 +1,11 @@
+# Node.js
+node_modules/
+
+# Archivos de log
+*.log
+
+# Carpeta de descargas (si la tienes)
+downloads/
+
+# Archivos de entorno
+.env
