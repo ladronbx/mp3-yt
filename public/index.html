@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargar YouTube a MP3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Transforma tu video de YouTube y descárgalo a MP3</h1>
+        <div id="inputContainer">
+            <input type="text" id="videoUrl" placeholder="Pega el enlace de YouTube aquí">
+            <button id="downloadBtn" onclick="downloadMp3()">Descargar MP3</button>
+        </div>
+        <span id="statusMessage"></span> <!-- 🔹 Mensaje de estado -->
+    </div>
+
+    <script>
+        function isValidYouTubeUrl(url) {
+            const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+            return regex.test(url);
+        }
+
+        async function downloadMp3() {
+            const url = document.getElementById("videoUrl").value;
+            const button = document.getElementById("downloadBtn");
+            const statusMessage = document.getElementById("statusMessage");
+            const inputContainer = document.getElementById("inputContainer");
+
+            if (!url || !isValidYouTubeUrl(url)) {
+                alert("Ingresa un enlace válido de YouTube");
+                return;
+            }
+
+            // 🔹 Oculta el input y botón al iniciar la descarga
+            inputContainer.classList.add("hidden");
+            statusMessage.innerText = "⚠️ No cierres ni refresques la página. Procesando el audio...";
+
+            try {
+                const response = await fetch("/download", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+
+                    const filename = response.headers.get("X-Filename") || "audio.mp3";
+                    link.download = filename;
+                    link.click();
+
+                    statusMessage.innerText = "✅ Descarga completada. Puedes buscar otro video.";
+                } else {
+                    throw new Error("Error al descargar el audio");
+                }
+            } catch (error) {
+                statusMessage.innerText = "❌ Error al descargar el audio.";
+            }
+
+            // 🔹 Restablece el input y botón para otra búsqueda
+            setTimeout(() => {
+                inputContainer.classList.remove("hidden");
+                statusMessage.innerText = ""; // Limpia el mensaje
+                document.getElementById("videoUrl").value = ""; // Limpia el input
+            }, 3000); // Espera 3 segundos antes de mostrar nuevamente
+        }
+    </script>
+
+</body>
+
+</html>
