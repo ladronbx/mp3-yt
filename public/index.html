@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,50 +7,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
+        .thumbnail { width: 100%; max-width: 300px; margin: 10px auto; border-radius: 10px; }
     </style>
 </head>
-
 <body>
     <div class="container">
         <h1>Transforma tu video de YouTube y descárgalo</h1>
+        
         <div id="inputContainer">
             <input type="text" id="videoUrl" placeholder="Pega el enlace de YouTube aquí">
             <button id="searchBtn" onclick="searchVideo()">Buscar</button>
         </div>
-        <div id="downloadOptions" class="hidden">
-            <button onclick="download('mp3')">Descargar MP3</button>
-            <button onclick="download('mp4')">Descargar MP4</button>
+
+        <div id="videoContainer" class="hidden">
+            <img id="videoThumbnail" class="thumbnail" src="" alt="Miniatura del video">
+            <div id="downloadOptions">
+                <button onclick="download('mp3')">Descargar MP3</button>
+                <button onclick="download('mp4')">Descargar MP4</button>
+            </div>
         </div>
+
+        <div id="confirmationScreen" class="hidden">
+            <p>¿Deseas buscar otro video?</p>
+            <button onclick="resetSearch()">Sí</button>
+            <button onclick="sayGoodbye()">No</button>
+        </div>
+
         <span id="statusMessage"></span>
     </div>
 
     <script>
         function isValidYouTubeUrl(url) {
-            const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+            const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.*[?&]v=([^&#]+).*$/;
             return regex.test(url);
         }
-
+        
+        function extractVideoId(url) {
+            const match = url.match(/[?&]v=([^&#]+)/);
+            return match ? match[1] : null;
+        }
+        
         function searchVideo() {
             const url = document.getElementById("videoUrl").value;
-            const statusMessage = document.getElementById("statusMessage");
-            const downloadOptions = document.getElementById("downloadOptions");
-
             if (!url || !isValidYouTubeUrl(url)) {
                 alert("Ingresa un enlace válido de YouTube");
                 return;
             }
             
-            statusMessage.innerText = "✅ Video encontrado. Elige el formato de descarga.";
-            downloadOptions.classList.remove("hidden");
+            const videoId = extractVideoId(url);
+            if (videoId) {
+                document.getElementById("videoThumbnail").src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+            }
+            
+            document.getElementById("inputContainer").classList.add("hidden");
+            document.getElementById("videoContainer").classList.remove("hidden");
         }
-
+        
         async function download(format) {
             const url = document.getElementById("videoUrl").value;
             const statusMessage = document.getElementById("statusMessage");
-            
             statusMessage.innerText = `⚠️ Descargando en formato ${format.toUpperCase()}...`;
 
             try {
@@ -61,21 +76,38 @@
                     body: JSON.stringify({ url, format })
                 });
 
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    const filename = response.headers.get("X-Filename") || `video.${format}`;
-                    link.download = filename;
-                    link.click();
+                if (!response.ok) throw new Error("Error al descargar el archivo");
 
-                    statusMessage.innerText = "✅ Descarga completada. Puedes buscar otro video.";
-                } else {
-                    throw new Error("Error al descargar el archivo");
-                }
+                // Convertir respuesta a Blob
+                const blob = await response.blob();
+                const filename = response.headers.get("X-Filename") || `video.${format}`;
+                
+                // Crear enlace para descargar
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                statusMessage.innerText = "✅ Descarga completada. ¿Deseas buscar otro video?";
+                document.getElementById("videoContainer").classList.add("hidden");
+                document.getElementById("confirmationScreen").classList.remove("hidden");
+
             } catch (error) {
                 statusMessage.innerText = "❌ Error al descargar el archivo.";
             }
+        }
+        
+        function resetSearch() {
+            document.getElementById("confirmationScreen").classList.add("hidden");
+            document.getElementById("inputContainer").classList.remove("hidden");
+            document.getElementById("videoUrl").value = "";
+            document.getElementById("statusMessage").innerText = "";
+        }
+        
+        function sayGoodbye() {
+            document.body.innerHTML = "<h1>¡Gracias, hasta la próxima! 👋</h1>";
         }
     </script>
 </body>

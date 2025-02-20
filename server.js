@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 const express = require("express");
 const cors = require("cors");
 const youtubedl = require("youtube-dl-exec");
@@ -11,12 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "1mb" }));
-
-const corsOptions = {
-    origin: "http://localhost:3000",
-    methods: ["POST"]
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000,
@@ -75,4 +69,4 @@ app.post("/download", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
