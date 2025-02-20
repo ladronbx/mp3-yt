@@ -112,3 +112,14 @@ button:hover {
         width: 90%;
     }
 }
+
+#downloadOptions {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px; /* Espacio entre botones */
+    margin-top: 20px;
+}
+
+#downloadOptions button {
+    flex: 1; /* Que los botones ocupen el mismo espacio */
+}
