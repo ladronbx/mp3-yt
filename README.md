@@ -44,7 +44,7 @@ node -v
 ### 2️⃣ Clonar el Repositorio
 Clona este proyecto desde GitHub con el siguiente comando:
 ```bash
-git clone https://github.com/tu-usuario/mp3-yt.git
+git clone https://github.com/ladronbx/mp3-yt.git
 ```
 
 ---
