@@ -6,7 +6,7 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Seguridad: Limitar tamaño de JSON
 app.use(express.json({ limit: "1mb" }));
