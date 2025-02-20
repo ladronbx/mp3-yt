@@ -1,97 +1,110 @@
-# 🎵 MP3-YT: Herramienta de Conversión de Audio
+# 🎵 MP3-YT: Conversor de Audio desde YouTube  
 
-Bienvenido a **MP3-YT**, una aplicación web diseñada con fines educativos y de experimentación con tecnologías web. Esta herramienta permite convertir enlaces de YouTube en archivos de audio en formato **MP3** para uso personal y legítimo. 🎶✨
-
----
-⚠️ **Aviso Legal**
-Este software debe utilizarse solo con contenido del cual poseas los derechos necesarios. No está destinado para descargar contenido con derechos de autor sin la debida autorización. El uso indebido de esta herramienta es responsabilidad exclusiva del usuario. No fomentamos ni apoyamos la piratería ni el uso ilegal de contenido protegido.
+Bienvenido a **MP3-YT**, una aplicación web diseñada con **fines educativos** y para la **experimentación con tecnologías web**. Esta herramienta permite convertir enlaces de YouTube en archivos de **audio MP3** de manera sencilla y rápida. 🎶✨  
 
 ---
 
-## 🚀 Características
-✔️ Conversión de enlaces a formato MP3 📥  
-✔️ Interfaz sencilla y fácil de usar 🎨  
-✔️ Medidas de seguridad para evitar abuso ⛔  
-✔️ Código abierto para fines educativos 💻  
+## ⚠️ **Aviso Importante**  
+
+🛑 **MP3-YT no debe usarse para descargar contenido protegido por derechos de autor sin autorización.**  
+
+Este software está diseñado para **uso personal y legal**, únicamente con contenido del cual poseas los derechos necesarios. **No fomentamos ni apoyamos la piratería ni el uso ilegal de contenido protegido.**  
+
+📢 **El uso indebido de esta herramienta es responsabilidad exclusiva del usuario.**  
 
 ---
 
-## 🛠 Tecnologías Utilizadas
+## 🚀 **Características**  
+✔️ **Conversión de videos de YouTube a MP3** 📥  
+✔️ **Detección automática de playlists** 🎵  
+✔️ **Interfaz minimalista y fácil de usar** 🎨  
+✔️ **Código abierto y transparente** 💻  
+✔️ **Protección contra abuso con límites de solicitudes** ⛔  
+
+---
+
+## 🎵 **Detección Inteligente de Playlists**  
+
+MP3-YT es capaz de **identificar automáticamente si el enlace ingresado pertenece a una playlist de YouTube**. En ese caso, la aplicación te ofrecerá una opción especial para gestionar la descarga de varios audios de manera más eficiente.  
+
+📢 **Importante:** Esta funcionalidad está integrada en la aplicación y debe usarse con responsabilidad. **No está permitido descargar contenido sin autorización.**  
+
+Para más detalles, descarga el repositorio y pruébalo por ti mismo.  
+
+---
+
+## 🛠 **Tecnologías Utilizadas**  
 Este proyecto está construido con las siguientes tecnologías:
 
-- **Node.js** 🟢 - Para el backend
-- **Express.js** 🚀 - Para el servidor web
-- **CORS** 🔗 - Para manejar las restricciones de acceso
-- **express-rate-limit** ⏳ - Para limitar el número de solicitudes por usuario
-- **youtube-dl-exec** 🎥 - Para la conversión de YouTube a MP3
+- **Node.js** 🟢 - Backend y ejecución de comandos  
+- **Express.js** 🚀 - Servidor web  
+- **CORS** 🔗 - Manejo de restricciones de acceso  
+- **express-rate-limit** ⏳ - Protección contra uso excesivo  
+- **youtube-dl-exec** 🎥 - Conversión de YouTube a MP3  
 
-Todas las librerías utilizadas son de código abierto. ✅
+✅ **Todas las librerías utilizadas son de código abierto.**  
 
 ---
 
-## 📥 Instalación y Uso
+## 📥 **Instalación y Uso**  
 
-### 1️⃣ Instalar Node.js (si no lo tienes)
-🔹 Descarga e instala **Node.js** desde [aquí](https://nodejs.org/).
-
-Para verificar si está instalado, ejecuta en la terminal:
+### 1️⃣ **Instalar Node.js**  
+🔹 Descarga e instala **Node.js** desde [aquí](https://nodejs.org/).  
+Para verificar la instalación, ejecuta en la terminal:  
 ```bash
 node -v
 ```
 
 ---
 
-### 2️⃣ Clonar el Repositorio
-Clona este proyecto desde GitHub con el siguiente comando:
+### 2️⃣ **Clonar el Repositorio**  
+Clona el proyecto desde GitHub con el siguiente comando:  
 ```bash
 git clone https://github.com/ladronbx/mp3-yt.git
 ```
 
 ---
 
-### 3️⃣ Instalar Dependencias
-Accede a la carpeta del proyecto y ejecuta:
+### 3️⃣ **Instalar Dependencias**  
+Accede a la carpeta del proyecto y ejecuta:  
 ```bash
 cd mp3-yt
 npm install
 ```
-
-Esto instalará todas las librerías necesarias.
+Esto instalará todas las librerías necesarias.  
 
 ---
 
-### 4️⃣ Ejecutar el Servidor
-Inicia el servidor con:
+### 4️⃣ **Ejecutar el Servidor**  
+Inicia el servidor con:  
 ```bash
 node server.js
 ```
-
-📢 Si todo está bien, deberías ver en la terminal:
+📢 Si todo está bien, deberías ver en la terminal:  
 ```
 Servidor corriendo en http://localhost:3000
 ```
 
 ---
 
-### 5️⃣ Usar la Aplicación
-1️⃣ Abre tu navegador y ve a: **http://localhost:3000**  
-2️⃣ Pega un enlace de YouTube que tengas derecho a utilizar 🎞️  
-3️⃣ Presiona "Descargar MP3" 🔽  
-4️⃣ ¡Listo! Se descargará el archivo en tu dispositivo 🎶  
+### 5️⃣ **Usar la Aplicación**  
+1️⃣ **Abre tu navegador** y ve a **http://localhost:3000**  
+2️⃣ **Pega un enlace de YouTube** que tengas derecho a utilizar 🎞️  
+3️⃣ **Si es un video**, presiona "Descargar MP3" 🔽  
+4️⃣ **Si es una playlist**, la aplicación te guiará en la descarga múltiple 🖥️  
+5️⃣ ¡Listo! Se descargará el archivo en tu dispositivo 🎶  
 
 ---
 
-## 🎯 Contribuciones
-Si tienes ideas para mejorar el proyecto, ¡envía un pull request o reporta un issue! 🤝
+## 🎯 **Contribuciones**  
+Si tienes ideas para mejorar el proyecto, ¡envía un pull request o reporta un issue! 🤝  
 
 ---
 
-## 📜 Licencia
-Este proyecto está bajo la **Licencia ISC**.
+## 📜 **Licencia**  
+Este proyecto está bajo la **Licencia ISC**.  
 
 ---
-📩 **Contacto:** ladronbienve@gmail.com
+📩 **Contacto:** ladronbienve@gmail.com  
 
-
-**Hecho con ❤️ para fines educativos**
-
+📌 **Hecho con ❤️ para fines educativos**  
