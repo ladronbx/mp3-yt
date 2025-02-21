@@ -23,14 +23,7 @@ app.use("/download", limiter);
 app.use(express.static("public"));
 
 // Verificar qué binario de yt-dlp usar
-let youtubedl;
-if (fs.existsSync("/usr/bin/yt-dlp")) {
-    youtubedl = youtubedl_exec.create("/usr/bin/yt-dlp");
-} else if (fs.existsSync("/usr/local/bin/yt-dlp")) {
-    youtubedl = youtubedl_exec.create("/usr/local/bin/yt-dlp");
-} else {
-    youtubedl = youtubedl_exec;
-}
+let youtubedl = youtubedl_exec.create("/usr/bin/yt-dlp");
 console.log("🛠️ Usando youtube-dl-exec con:", youtubedl.binary);
 
 // Función para validar URL de YouTube
