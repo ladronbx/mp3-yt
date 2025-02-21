@@ -39,7 +39,7 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-    const outputPath = path.join("/tmp", "downloads");
+    const outputPath = path.join(__dirname, "downloads");
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath);
     }
