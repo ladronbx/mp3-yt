@@ -29,7 +29,7 @@ if (fs.existsSync("/usr/bin/yt-dlp")) {
 } else if (fs.existsSync("/usr/local/bin/yt-dlp")) {
     youtubedl = youtubedl_exec.create("/usr/local/bin/yt-dlp");
 } else {
-    youtubedl = youtubedl_exec; // Usa el que está en node_modules
+    youtubedl = youtubedl_exec;
 }
 console.log("🛠️ Usando youtube-dl-exec con:", youtubedl.binary);
 
@@ -43,6 +43,12 @@ function cleanYouTubeUrl(url) {
     return `https://www.youtube.com/watch?v=${urlObj.searchParams.get("v")}`;
 }
 
+// Definir directorio de descargas
+const outputPath = path.join(__dirname, "downloads");
+if (!fs.existsSync(outputPath)) {
+    fs.mkdirSync(outputPath, { recursive: true });
+}
+
 // Ruta de descarga
 app.post("/download", async (req, res) => {
     let { url, format } = req.body;
@@ -51,16 +57,10 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-    const outputPath = "/tmp";
-    if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath, { recursive: true });
-    }
 
     try {
         console.log(`🔍 Obteniendo metadata para: ${url}`);
         const metadata = await youtubedl(url, { dumpSingleJson: true });
-        
-        // Solo imprimimos información relevante
         console.log(`🎬 Video encontrado: "${metadata.title}" (${metadata.format_note})`);
 
         const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
@@ -121,6 +121,5 @@ app.post("/download", async (req, res) => {
         res.status(500).json({ error: "Error en la descarga", details: error.message });
     }
 });
-
 
 app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
