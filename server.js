@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl_exec = require("youtube-dl-exec");
+const { exec } = require("child_process");  // Reemplazo de youtube-dl-exec
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
@@ -22,9 +22,15 @@ const limiter = rateLimit({
 app.use("/download", limiter);
 app.use(express.static("public"));
 
-// Verificar qué binario de yt-dlp usar
-let youtubedl = youtubedl_exec.create("/usr/bin/yt-dlp");
-console.log("🛠️ Usando youtube-dl-exec con:", youtubedl.binary);
+// Verificar si yt-dlp está instalado
+exec("which yt-dlp", (err, stdout) => {
+    if (err || !stdout.trim()) {
+        console.error("❌ yt-dlp no está instalado o no se encuentra en la ruta.");
+        process.exit(1);
+    } else {
+        console.log(`🛠️ Usando yt-dlp desde: ${stdout.trim()}`);
+    }
+});
 
 // Función para validar URL de YouTube
 function isValidYouTubeUrl(url) {
@@ -42,6 +48,19 @@ if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
 }
 
+// Función para ejecutar yt-dlp
+function ejecutarYtDlp(comando) {
+    return new Promise((resolve, reject) => {
+        exec(comando, (error, stdout, stderr) => {
+            if (error) {
+                console.error("❌ Error al ejecutar yt-dlp:", stderr);
+                return reject(stderr);
+            }
+            resolve(stdout);
+        });
+    });
+}
+
 // Ruta de descarga
 app.post("/download", async (req, res) => {
     let { url, format } = req.body;
@@ -53,7 +72,9 @@ app.post("/download", async (req, res) => {
 
     try {
         console.log(`🔍 Obteniendo metadata para: ${url}`);
-        const metadata = await youtubedl(url, { dumpSingleJson: true });
+        const metadataRaw = await ejecutarYtDlp(`yt-dlp -j "${url}"`);
+        const metadata = JSON.parse(metadataRaw);
+
         console.log(`🎬 Video encontrado: "${metadata.title}" (${metadata.format_note})`);
 
         const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
@@ -64,10 +85,10 @@ app.post("/download", async (req, res) => {
             const zipPath = path.join(outputPath, `${title}.zip`);
 
             console.log("📥 Descargando MP4...");
-            await youtubedl(url, { output: mp4File, format: "mp4" });
+            await ejecutarYtDlp(`yt-dlp -f mp4 -o "${mp4File}" "${url}"`);
 
             console.log("📥 Descargando MP3...");
-            await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
+            await ejecutarYtDlp(`yt-dlp -x --audio-format mp3 -o "${mp3File}" "${url}"`);
 
             console.log("📦 Creando ZIP...");
             const output = fs.createWriteStream(zipPath);
@@ -89,19 +110,19 @@ app.post("/download", async (req, res) => {
             });
 
         } else {
-            let filename, outputFile, options;
+            let filename, outputFile, comando;
             if (format === "mp4") {
                 filename = `${title}.mp4`;
                 outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, format: "mp4" };
+                comando = `yt-dlp -f mp4 -o "${outputFile}" "${url}"`;
             } else {
                 filename = `${title}.mp3`;
                 outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, extractAudio: true, audioFormat: "mp3" };
+                comando = `yt-dlp -x --audio-format mp3 -o "${outputFile}" "${url}"`;
             }
 
             console.log(`📥 Descargando en formato ${format.toUpperCase()}...`);
-            await youtubedl(url, options);
+            await ejecutarYtDlp(comando);
 
             console.log(`✅ Descarga completada: ${outputFile}`);
             res.setHeader("X-Filename", filename);
@@ -110,8 +131,8 @@ app.post("/download", async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("❌ Error en la descarga:", error.message);
-        res.status(500).json({ error: "Error en la descarga", details: error.message });
+        console.error("❌ Error en la descarga:", error);
+        res.status(500).json({ error: "Error en la descarga", details: error });
     }
 });
 
