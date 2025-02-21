@@ -39,7 +39,7 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-    const outputPath = path.join(__dirname, "downloads");
+    const outputPath = path.join("/tmp", "downloads");
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath);
     }
@@ -93,6 +93,7 @@ app.post("/download", async (req, res) => {
             });
         }
     } catch (error) {
+        console.error("Error en la descarga:", error);
         res.status(500).json({ error: "Error al descargar el archivo" });
     }
 });
