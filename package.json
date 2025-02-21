@@ -4,9 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "preinstall": "npm install -g youtube-dl-exec",
-    "postinstall": "curl -fsSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ && mv ffmpeg-*-static/ffmpeg /usr/bin/ffmpeg"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -14,7 +12,8 @@
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
     "youtube-dl-exec": "^3.0.15",
-    "archiver": "^5.3.1"
+    "archiver": "^5.3.1",
+    "ffmpeg-static": "^5.1.0"
   },
   "engines": {
     "node": ">=18.0.0"

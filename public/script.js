@@ -30,7 +30,7 @@ function searchVideo() {
     if (url.includes("list=")) {
         playlistCommand.textContent = `yt-dlp -x --audio-format mp3 -o "%(title)s.%(ext)s" "${url}"`;
         playlistMessage.classList.remove("hidden");
-        commandContainer.classList.add("hidden"); // Asegurar que el comando esté oculto al inicio
+        commandContainer.classList.add("hidden"); // Ocultar comando si es necesario
     } else {
         playlistMessage.classList.add("hidden");
     }
@@ -50,9 +50,19 @@ async function download(format) {
 
         if (!response.ok) throw new Error("Error al descargar el archivo");
 
-        // Convertir respuesta a Blob
+        // Convertir la respuesta a un blob (archivo binario)
         const blob = await response.blob();
-        const filename = response.headers.get("X-Filename") || (format === "both" ? "video_audio.zip" : `video.${format}`);
+        const contentDisposition = response.headers.get("Content-Disposition");
+        let filename = "archivo";
+
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="(.+)"/);
+            if (match) {
+                filename = match[1];
+            }
+        } else {
+            filename = format === "both" ? "video_audio.zip" : `video.${format}`;
+        }
 
         // Crear enlace para descargar y permitir seleccionar carpeta
         const link = document.createElement("a");
@@ -67,6 +77,7 @@ async function download(format) {
         document.getElementById("confirmationScreen").classList.remove("hidden");
 
     } catch (error) {
+        console.error("Error en la descarga:", error);
         statusMessage.innerText = "❌ Error al descargar el archivo.";
     }
 }
