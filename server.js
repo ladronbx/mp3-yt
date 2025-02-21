@@ -1,10 +1,11 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("youtube-dl-exec");
+const youtubedl_exec = require("youtube-dl-exec");
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
+const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,15 +13,27 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
 
+// Límite de descargas
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 70,
     message: "Has alcanzado el límite de descargas. Intenta más tarde."
 });
-
 app.use("/download", limiter);
 app.use(express.static("public"));
 
+// Verificar qué binario de yt-dlp usar
+let youtubedl;
+if (fs.existsSync("/usr/bin/yt-dlp")) {
+    youtubedl = youtubedl_exec.create("/usr/bin/yt-dlp");
+} else if (fs.existsSync("/usr/local/bin/yt-dlp")) {
+    youtubedl = youtubedl_exec.create("/usr/local/bin/yt-dlp");
+} else {
+    youtubedl = youtubedl_exec; // Usa el que está en node_modules
+}
+console.log("🛠️ Usando youtube-dl-exec con:", youtubedl.binary);
+
+// Función para validar URL de YouTube
 function isValidYouTubeUrl(url) {
     return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i.test(url);
 }
@@ -30,8 +43,7 @@ function cleanYouTubeUrl(url) {
     return `https://www.youtube.com/watch?v=${urlObj.searchParams.get("v")}`;
 }
 
-const archiver = require("archiver");
-
+// Ruta de descarga
 app.post("/download", async (req, res) => {
     let { url, format } = req.body;
     if (!url || !isValidYouTubeUrl(url)) {
@@ -41,21 +53,30 @@ app.post("/download", async (req, res) => {
     url = cleanYouTubeUrl(url);
     const outputPath = "/tmp";
     if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath);
+        fs.mkdirSync(outputPath, { recursive: true });
     }
 
     try {
+        console.log(`🔍 Obteniendo metadata para: ${url}`);
         const metadata = await youtubedl(url, { dumpSingleJson: true });
-        const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
         
+        // Solo imprimimos información relevante
+        console.log(`🎬 Video encontrado: "${metadata.title}" (${metadata.format_note})`);
+
+        const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
+
         if (format === "both") {
             const mp4File = path.join(outputPath, `${title}.mp4`);
             const mp3File = path.join(outputPath, `${title}.mp3`);
-            
-            await youtubedl(url, { output: mp4File, format: "mp4" });
-            await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
-            
             const zipPath = path.join(outputPath, `${title}.zip`);
+
+            console.log("📥 Descargando MP4...");
+            await youtubedl(url, { output: mp4File, format: "mp4" });
+
+            console.log("📥 Descargando MP3...");
+            await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
+
+            console.log("📦 Creando ZIP...");
             const output = fs.createWriteStream(zipPath);
             const archive = archiver("zip", { zlib: { level: 9 } });
 
@@ -65,6 +86,7 @@ app.post("/download", async (req, res) => {
             await archive.finalize();
 
             output.on("close", () => {
+                console.log(`✅ ZIP creado: ${zipPath}`);
                 res.setHeader("X-Filename", `${title}.zip`);
                 res.download(zipPath, `${title}.zip`, () => {
                     fs.unlinkSync(zipPath);
@@ -73,11 +95,8 @@ app.post("/download", async (req, res) => {
                 });
             });
 
-            console.log("✅ Descarga completada");
-
         } else {
             let filename, outputFile, options;
-
             if (format === "mp4") {
                 filename = `${title}.mp4`;
                 outputFile = path.join(outputPath, filename);
@@ -88,17 +107,20 @@ app.post("/download", async (req, res) => {
                 options = { output: outputFile, extractAudio: true, audioFormat: "mp3" };
             }
 
+            console.log(`📥 Descargando en formato ${format.toUpperCase()}...`);
             await youtubedl(url, options);
 
+            console.log(`✅ Descarga completada: ${outputFile}`);
             res.setHeader("X-Filename", filename);
             res.download(outputFile, filename, () => {
                 fs.unlinkSync(outputFile);
             });
         }
     } catch (error) {
-        console.error("❌ Error en la descarga:", error);
-        res.status(500).send("Error en la descarga");
+        console.error("❌ Error en la descarga:", error.message);
+        res.status(500).json({ error: "Error en la descarga", details: error.message });
     }
 });
+
 
 app.listen(PORT, () => console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`));
