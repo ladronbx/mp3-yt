@@ -39,7 +39,7 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-    const outputPath = path.join(__dirname, "downloads");
+    const outputPath = "/tmp";
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath);
     }
@@ -52,7 +52,7 @@ app.post("/download", async (req, res) => {
             const mp4File = path.join(outputPath, `${title}.mp4`);
             const mp3File = path.join(outputPath, `${title}.mp3`);
             
-            await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" });
+            await youtubedl(url, { output: mp4File, format: "mp4" });
             await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
             
             const zipPath = path.join(outputPath, `${title}.zip`);
@@ -81,7 +81,7 @@ app.post("/download", async (req, res) => {
             if (format === "mp4") {
                 filename = `${title}.mp4`;
                 outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" };
+                options = { output: outputFile, format: "mp4" };
             } else {
                 filename = `${title}.mp3`;
                 outputFile = path.join(outputPath, filename);
