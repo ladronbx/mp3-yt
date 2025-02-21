@@ -1,10 +1,11 @@
 require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("youtube-dl-exec");
+const youtubedl = require("yt-dlp");
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
+const ffmpegPath = require("ffmpeg-static");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -72,6 +73,9 @@ app.post("/download", async (req, res) => {
                     fs.unlinkSync(mp3File);
                 });
             });
+
+            console.log("✅ Descarga completada");
+
         } else {
             let filename, outputFile, options;
 
@@ -93,8 +97,8 @@ app.post("/download", async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Error en la descarga:", error);
-        res.status(500).json({ error: "Error al descargar el archivo" });
+        console.error("❌ Error en la descarga:", error);
+        res.status(500).send("Error en la descarga");
     }
 });
 
