@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "preinstall": "npm install -g youtube-dl-exec"
+    "preinstall": "npm install -g youtube-dl-exec",
+    "postinstall": "curl -fsSL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ && mv ffmpeg-*-static/ffmpeg /usr/bin/ffmpeg"
   },
   "dependencies": {
     "cors": "^2.8.5",
