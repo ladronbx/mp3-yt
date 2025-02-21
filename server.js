@@ -1,11 +1,10 @@
 require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("yt-dlp");
+const youtubedl = require("youtube-dl-exec");
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
-const ffmpegPath = require("ffmpeg-static");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
