@@ -28,9 +28,9 @@ function searchVideo() {
     document.getElementById("videoContainer").classList.remove("hidden");
 
     if (url.includes("list=")) {
-        playlistCommand.textContent = `yt-dlp -x --audio-format mp3 -o "%(title)s.%(ext)s" "${url}"`;
+        playlistCommand.textContent = `yt-dlp -x --audio-format mp3 -o \"%(title)s.%(ext)s\" \"${url}\"`;
         playlistMessage.classList.remove("hidden");
-        commandContainer.classList.add("hidden"); // Ocultar comando si es necesario
+        commandContainer.classList.add("hidden");
     } else {
         playlistMessage.classList.add("hidden");
     }
@@ -48,9 +48,10 @@ async function download(format) {
             body: JSON.stringify({ url, format })
         });
 
-        if (!response.ok) throw new Error("Error al descargar el archivo");
+        if (!response.ok) {
+            throw new Error(`Error al descargar el archivo: ${response.statusText}`);
+        }
 
-        // Convertir la respuesta a un blob (archivo binario)
         const blob = await response.blob();
         const contentDisposition = response.headers.get("Content-Disposition");
         let filename = "archivo";
@@ -64,7 +65,6 @@ async function download(format) {
             filename = format === "both" ? "video_audio.zip" : `video.${format}`;
         }
 
-        // Crear enlace para descargar y permitir seleccionar carpeta
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = filename;
@@ -75,14 +75,12 @@ async function download(format) {
         statusMessage.innerText = "✅ Descarga completada. ¿Deseas buscar otro video?";
         document.getElementById("videoContainer").classList.add("hidden");
         document.getElementById("confirmationScreen").classList.remove("hidden");
-
     } catch (error) {
         console.error("Error en la descarga:", error);
-        statusMessage.innerText = "❌ Error al descargar el archivo.";
+        statusMessage.innerText = "❌ Error al descargar el archivo. Intenta nuevamente.";
     }
 }
 
-// Asignar el evento al botón al cargar la página
 document.addEventListener("DOMContentLoaded", function () {
     const showCommandBtn = document.getElementById("showCommandBtn");
     if (showCommandBtn) {
