@@ -9,6 +9,17 @@ const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const YT_DLP_PATH = process.env.RENDER ? path.join(__dirname, "yt-dlp") : "yt-dlp";
+
+// Verificar si yt-dlp está instalado correctamente
+exec(`which ${YT_DLP_PATH}`, (err, stdout) => {
+    if (err || !stdout.trim()) {
+        console.error("❌ yt-dlp no está instalado o no se encuentra en la ruta.");
+        process.exit(1);
+    } else {
+        console.log(`🛠️ Usando yt-dlp desde: ${stdout.trim()}`);
+    }
+});
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
@@ -21,16 +32,6 @@ const limiter = rateLimit({
 });
 app.use("/download", limiter);
 app.use(express.static("public"));
-
-// Verificar si yt-dlp está instalado
-exec("which yt-dlp", (err, stdout) => {
-    if (err || !stdout.trim()) {
-        console.error("❌ yt-dlp no está instalado o no se encuentra en la ruta.");
-        process.exit(1);
-    } else {
-        console.log(`🛠️ Usando yt-dlp desde: ${stdout.trim()}`);
-    }
-});
 
 // Función para validar URL de YouTube
 function isValidYouTubeUrl(url) {
