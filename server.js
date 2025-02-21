@@ -9,17 +9,22 @@ const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const YT_DLP_PATH = process.env.RENDER ? path.join(__dirname, "yt-dlp") : "yt-dlp";
 
-// Verificar si yt-dlp está instalado correctamente
-exec(`which ${YT_DLP_PATH}`, (err, stdout) => {
-    if (err || !stdout.trim()) {
-        console.error("❌ yt-dlp no está instalado o no se encuentra en la ruta.");
-        process.exit(1);
-    } else {
-        console.log(`🛠️ Usando yt-dlp desde: ${stdout.trim()}`);
-    }
-});
+const YT_DLP_PATH = path.join(__dirname, "yt-dlp");
+
+// Verificar si yt-dlp está disponible, si no, descargarlo
+if (!fs.existsSync(YT_DLP_PATH)) {
+    console.log("⬇️ Descargando yt-dlp...");
+    exec(`curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${YT_DLP_PATH} && chmod +x ${YT_DLP_PATH}`, (err) => {
+        if (err) {
+            console.error("❌ Error descargando yt-dlp:", err);
+            process.exit(1);
+        } else {
+            console.log("✅ yt-dlp descargado y listo para usar.");
+        }
+    });
+}
+
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
