@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("youtube-dl-exec").create();
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
@@ -12,6 +11,21 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
+
+const { exec } = require("child_process");
+
+function runYtDlp(url, options) {
+    return new Promise((resolve, reject) => {
+        const command = `/opt/homebrew/bin/yt-dlp ${options} "${url}"`;
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error ejecutando yt-dlp: ${stderr}`);
+                return reject(stderr);
+            }
+            resolve(stdout);
+        });
+    });
+}
 
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hora
@@ -52,7 +66,10 @@ app.post("/download", async (req, res) => {
     }
 
     try {
-        const metadata = await youtubedl(url, { dumpSingleJson: true });
+        // const metadata = await youtubedl(url, { dumpSingleJson: true });
+        const metadataJson = await runYtDlp(url, "--dump-json");
+        const metadata = JSON.parse(metadataJson);
+
         const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
         const filesToDelete = [];
 
@@ -60,8 +77,8 @@ app.post("/download", async (req, res) => {
             const mp4File = path.join(outputPath, `${title}.mp4`);
             const mp3File = path.join(outputPath, `${title}.mp3`);
 
-            await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "ffmpeg" });
-            await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
+            await runYtDlp(url, `-f mp4 -o "${mp4File}" --ffmpeg-location ffmpeg`);
+            await runYtDlp(url, `-x --audio-format mp3 -o "${mp3File}"`);            
 
             filesToDelete.push(mp4File, mp3File);
 
@@ -96,7 +113,7 @@ app.post("/download", async (req, res) => {
                 options = { output: outputFile, extractAudio: true, audioFormat: "mp3" };
             }
 
-            await youtubedl(url, options);
+            await runYtDlp(url, format === "mp4" ? `-f mp4 -o "${outputFile}" --ffmpeg-location ffmpeg` : `-x --audio-format mp3 -o "${outputFile}"`);
 
             filesToDelete.push(outputFile);
 

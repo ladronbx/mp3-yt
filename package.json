@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "preinstall": "npm install -g youtube-dl-exec",
     "postinstall": "if [ -f /usr/local/bin/yt-dlp ]; then chmod +x /usr/local/bin/yt-dlp; fi"
   },
   "dependencies": {
