@@ -1,10 +1,11 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("youtube-dl-exec");
+const youtubedl = require("youtube-dl-exec").create();
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
+const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,7 +14,7 @@ app.use(express.json({ limit: "1mb" }));
 app.use(cors());
 
 const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
+    windowMs: 60 * 60 * 1000, // 1 hora
     max: 70,
     message: "Has alcanzado el límite de descargas. Intenta más tarde."
 });
@@ -26,11 +27,13 @@ function isValidYouTubeUrl(url) {
 }
 
 function cleanYouTubeUrl(url) {
-    const urlObj = new URL(url);
-    return `https://www.youtube.com/watch?v=${urlObj.searchParams.get("v")}`;
+    try {
+        const urlObj = new URL(url);
+        return `https://www.youtube.com/watch?v=${urlObj.searchParams.get("v")}`;
+    } catch (error) {
+        return null;
+    }
 }
-
-const archiver = require("archiver");
 
 app.post("/download", async (req, res) => {
     let { url, format } = req.body;
@@ -39,22 +42,29 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
+    if (!url) {
+        return res.status(400).json({ error: "URL inválida" });
+    }
+
     const outputPath = path.join(__dirname, "downloads");
     if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath);
+        fs.mkdirSync(outputPath, { recursive: true });
     }
 
     try {
         const metadata = await youtubedl(url, { dumpSingleJson: true });
         const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
-        
+        const filesToDelete = [];
+
         if (format === "both") {
             const mp4File = path.join(outputPath, `${title}.mp4`);
             const mp3File = path.join(outputPath, `${title}.mp3`);
-            
-            await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" });
+
+            await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "ffmpeg" });
             await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
-            
+
+            filesToDelete.push(mp4File, mp3File);
+
             const zipPath = path.join(outputPath, `${title}.zip`);
             const output = fs.createWriteStream(zipPath);
             const archive = archiver("zip", { zlib: { level: 9 } });
@@ -66,19 +76,20 @@ app.post("/download", async (req, res) => {
 
             output.on("close", () => {
                 res.setHeader("X-Filename", `${title}.zip`);
-                res.download(zipPath, `${title}.zip`, () => {
-                    fs.unlinkSync(zipPath);
-                    fs.unlinkSync(mp4File);
-                    fs.unlinkSync(mp3File);
+                res.download(zipPath, `${title}.zip`, (err) => {
+                    if (!err) {
+                        filesToDelete.forEach((file) => fs.existsSync(file) && fs.unlinkSync(file));
+                    }
                 });
             });
+
         } else {
             let filename, outputFile, options;
 
             if (format === "mp4") {
                 filename = `${title}.mp4`;
                 outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" };
+                options = { output: outputFile, format: "mp4", ffmpegLocation: "ffmpeg" };
             } else {
                 filename = `${title}.mp3`;
                 outputFile = path.join(outputPath, filename);
@@ -87,9 +98,13 @@ app.post("/download", async (req, res) => {
 
             await youtubedl(url, options);
 
+            filesToDelete.push(outputFile);
+
             res.setHeader("X-Filename", filename);
-            res.download(outputFile, filename, () => {
-                fs.unlinkSync(outputFile);
+            res.download(outputFile, filename, (err) => {
+                if (!err) {
+                    filesToDelete.forEach((file) => fs.existsSync(file) && fs.unlinkSync(file));
+                }
             });
         }
     } catch (error) {
