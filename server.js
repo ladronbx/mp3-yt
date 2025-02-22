@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { exec } = require("child_process");
 
-let ytdlpPath = "yt-dlp"; // Usar solo "yt-dlp" por defecto
+let ytdlpPath = "yt-dlp";
 
 exec("which yt-dlp", (error, stdout, stderr) => {
     if (error) {
@@ -9,6 +9,15 @@ exec("which yt-dlp", (error, stdout, stderr) => {
     } else {
         ytdlpPath = stdout.trim();
         console.log(`yt-dlp está en: ${ytdlpPath}`);
+
+        // Aquí verificamos la versión de yt-dlp después de encontrar su ubicación
+        exec(`${ytdlpPath} --version`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`❌ Error ejecutando yt-dlp: ${stderr}`);
+            } else {
+                console.log(`✅ Versión de yt-dlp: ${stdout.trim()}`);
+            }
+        });
     }
 });
 

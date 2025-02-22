@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Instalar dependencias necesarias
-RUN apk add --no-cache yt-dlp ffmpeg
+RUN apk add --no-cache yt-dlp ffmpeg && ln -s /usr/bin/yt-dlp /usr/local/bin/yt-dlp
 
 # Copiar archivos del proyecto
 COPY package*.json ./
