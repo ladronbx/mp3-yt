@@ -4,7 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+<<<<<<< HEAD
     "start": "node server.js"
+=======
+    "start": "node server.js",
+    "postinstall": "if [ -f /usr/local/bin/yt-dlp ]; then chmod +x /usr/local/bin/yt-dlp; fi"
+>>>>>>> main
   },
   "dependencies": {
     "cors": "^2.8.5",
