@@ -16,7 +16,9 @@ const { exec } = require("child_process");
 
 function runYtDlp(url, options) {
     return new Promise((resolve, reject) => {
-        const command = `/opt/homebrew/bin/yt-dlp ${options} "${url}"`;
+        // const command = `/opt/homebrew/bin/yt-dlp ${options} "${url}"`;
+        const command = `yt-dlp ${options} "${url}"`;
+
         exec(command, (error, stdout, stderr) => {
             if (error) {
                 console.error(`Error ejecutando yt-dlp: ${stderr}`);
@@ -60,7 +62,9 @@ app.post("/download", async (req, res) => {
         return res.status(400).json({ error: "URL inválida" });
     }
 
-    const outputPath = path.join(__dirname, "downloads");
+    // const outputPath = path.join(__dirname, "downloads");
+    const outputPath = "/tmp";
+    
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
     }
