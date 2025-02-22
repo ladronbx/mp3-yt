@@ -1,16 +1,16 @@
-# Imagen de Node.js con ffmpeg y yt-dlp preinstalados
-FROM jrottenberg/ffmpeg:4.4-alpine AS ffmpeg
+# Usa una imagen base con Node.js
 FROM node:18-alpine
 
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Instalar yt-dlp con pip (más confiable en entornos sin apt-get)
-RUN apk add --no-cache python3 py3-pip && pip install yt-dlp
+# Instalar dependencias necesarias
+RUN apk add --no-cache python3 py3-pip ffmpeg \
+    && pip install --no-cache-dir yt-dlp
 
-# Copiar archivos de la aplicación
+# Copiar archivos del proyecto
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 COPY . .
 

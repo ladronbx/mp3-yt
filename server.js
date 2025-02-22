@@ -1,4 +1,17 @@
 require("dotenv").config();
+const { exec } = require("child_process");
+
+let ytdlpPath = "yt-dlp"; // Usar solo "yt-dlp" por defecto
+
+exec("which yt-dlp", (error, stdout, stderr) => {
+    if (error) {
+        console.error(`yt-dlp no encontrado: ${stderr}`);
+    } else {
+        ytdlpPath = stdout.trim();
+        console.log(`yt-dlp está en: ${ytdlpPath}`);
+    }
+});
+
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -12,12 +25,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
 
-const { exec } = require("child_process");
-
 function runYtDlp(url, options) {
     return new Promise((resolve, reject) => {
-        // const command = `/opt/homebrew/bin/yt-dlp ${options} "${url}"`;
-        const command = `yt-dlp ${options} "${url}"`;
+        const command = `${ytdlpPath} ${options} "${url}"`;
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -64,7 +74,7 @@ app.post("/download", async (req, res) => {
 
     // const outputPath = path.join(__dirname, "downloads");
     const outputPath = "/tmp";
-    
+
     if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
     }
