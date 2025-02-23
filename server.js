@@ -2,25 +2,35 @@ require("dotenv").config();
 const { exec } = require("child_process");
 
 // let ytdlpPath = "yt-dlp";
-let ytdlpPath = "python3 -m yt_dlp";
 
-exec("which yt-dlp", (error, stdout, stderr) => {
+// exec("which yt-dlp", (error, stdout, stderr) => {
+//     if (error) {
+//         console.error(`yt-dlp no encontrado: ${stderr}`);
+//     } else {
+//         ytdlpPath = stdout.trim();
+//         console.log(`yt-dlp está en: ${ytdlpPath}`);
+
+//         // Aquí verificamos la versión de yt-dlp después de encontrar su ubicación
+//         exec(`${ytdlpPath} --version`, (error, stdout, stderr) => {
+//             if (error) {
+//                 console.error(`❌ Error ejecutando yt-dlp: ${stderr}`);
+//             } else {
+//                 console.log(`✅ Versión de yt-dlp: ${stdout.trim()}`);
+//             }
+//         });
+//     }
+// });
+
+const ytdlpPath = "python3 -m yt_dlp";
+
+exec(`${ytdlpPath} --version`, (error, stdout, stderr) => {
     if (error) {
-        console.error(`yt-dlp no encontrado: ${stderr}`);
+        console.error(`❌ Error ejecutando yt-dlp: ${stderr}`);
     } else {
-        ytdlpPath = stdout.trim();
-        console.log(`yt-dlp está en: ${ytdlpPath}`);
-
-        // Aquí verificamos la versión de yt-dlp después de encontrar su ubicación
-        exec(`${ytdlpPath} --version`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`❌ Error ejecutando yt-dlp: ${stderr}`);
-            } else {
-                console.log(`✅ Versión de yt-dlp: ${stdout.trim()}`);
-            }
-        });
+        console.log(`✅ Versión de yt-dlp detectada: ${stdout.trim()}`);
     }
 });
+
 
 const express = require("express");
 const cors = require("cors");

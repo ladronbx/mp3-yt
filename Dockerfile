@@ -4,12 +4,14 @@ FROM node:18-alpine
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Instalar Python y pip
-RUN apk add --no-cache python3 py3-pip ffmpeg
+# Instalar dependencias necesarias
+RUN apk add --no-cache python3 py3-pip ffmpeg curl
 
 # Instalar yt-dlp con pip
-RUN pip install yt-dlp
-RUN python3 -m yt_dlp --version
+RUN pip install --no-cache-dir yt-dlp
+
+# Verificar instalación de yt-dlp
+RUN echo "Verificando yt-dlp..." && python3 -m yt_dlp --version
 
 # Copiar archivos del proyecto
 COPY package*.json ./
