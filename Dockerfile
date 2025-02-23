@@ -1,11 +1,15 @@
-# Usa una imagen base con Node.js
+# Usa una imagen base con Node.js y Python
 FROM node:18-alpine
 
 # Establecer directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias necesarias
-RUN apk add --no-cache yt-dlp ffmpeg && ln -s /usr/bin/yt-dlp /usr/local/bin/yt-dlp
+# Instalar Python y pip
+RUN apk add --no-cache python3 py3-pip ffmpeg
+
+# Instalar yt-dlp con pip
+RUN pip install yt-dlp
+RUN python3 -m yt_dlp --version
 
 # Copiar archivos del proyecto
 COPY package*.json ./

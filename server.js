@@ -1,7 +1,8 @@
 require("dotenv").config();
 const { exec } = require("child_process");
 
-let ytdlpPath = "yt-dlp";
+// let ytdlpPath = "yt-dlp";
+let ytdlpPath = "python3 -m yt_dlp";
 
 exec("which yt-dlp", (error, stdout, stderr) => {
     if (error) {
