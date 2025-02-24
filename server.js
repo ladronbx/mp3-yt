@@ -7,7 +7,7 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
