@@ -61,6 +61,30 @@ app.post("/download", async (req, res) => {
 
     url = cleanYouTubeUrl(url);
 
+    const ytDlp = new YTDlpWrap();
+
+    async function ensureYtDlp() {
+        try {
+            const binaryPath = ytDlp.getBinaryPath();
+            if (!binaryPath || !fs.existsSync(binaryPath)) {
+                console.log("⚡ Descargando yt-dlp...");
+                await YTDlpWrap.downloadFromGithub();
+                console.log("✅ yt-dlp instalado correctamente.");
+            } else {
+                console.log("✔️ yt-dlp ya está instalado.");
+            }
+        } catch (error) {
+            console.error("❌ Error al descargar yt-dlp:", error);
+            process.exit(1);
+        }
+    }
+    
+    // Asegurar que yt-dlp esté disponible antes de iniciar el servidor
+    ensureYtDlp();
+    
+
+
+
     try {
         console.log("📄 Obteniendo metadatos del video...");
         const metadata = await ytDlp.execPromise([url, "--dump-json"]);

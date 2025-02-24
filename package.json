@@ -4,8 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "preinstall": "npm install -g yt-dlp"
+    "start": "node server.js"
   },
   "dependencies": {
     "archiver": "^5.3.1",
