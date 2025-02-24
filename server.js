@@ -7,19 +7,6 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const archiver = require("archiver");
 
-const ytDlpBinary = path.join(__dirname, "yt-dlp");
-
-async function ensureYtDlp() {
-    if (!fs.existsSync(ytDlpBinary)) {
-        console.log("⚡ Descargando yt-dlp...");
-        await YTDlpWrap.downloadFromGithub(ytDlpBinary);
-        console.log("✅ yt-dlp instalado correctamente.");
-    } else {
-        console.log("✔️ yt-dlp ya está instalado.");
-    }
-}
-ensureYtDlp();
-
 const app = express();
 const PORT = process.env.PORT || 10000;
 const DOWNLOADS_DIR = "/tmp";
@@ -73,30 +60,6 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-
-    const ytDlp = new YTDlpWrap();
-
-    async function ensureYtDlp() {
-        try {
-            const binaryPath = ytDlp.getBinaryPath();
-            if (!binaryPath || !fs.existsSync(binaryPath)) {
-                console.log("⚡ Descargando yt-dlp...");
-                await YTDlpWrap.downloadFromGithub();
-                console.log("✅ yt-dlp instalado correctamente.");
-            } else {
-                console.log("✔️ yt-dlp ya está instalado.");
-            }
-        } catch (error) {
-            console.error("❌ Error al descargar yt-dlp:", error);
-            process.exit(1);
-        }
-    }
-    
-    // Asegurar que yt-dlp esté disponible antes de iniciar el servidor
-    ensureYtDlp();
-    
-
-
 
     try {
         console.log("📄 Obteniendo metadatos del video...");
