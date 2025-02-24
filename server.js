@@ -5,32 +5,41 @@ const youtubedl = require("youtube-dl-exec");
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
+const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+const DOWNLOADS_DIR = path.join(__dirname, "downloads");
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
+app.use(express.static("public"));
 
 const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
+    windowMs: 60 * 60 * 1000, // 1 hora
     max: 70,
     message: "Has alcanzado el límite de descargas. Intenta más tarde."
 });
 
 app.use("/download", limiter);
-app.use(express.static("public"));
+
+if (!fs.existsSync(DOWNLOADS_DIR)) {
+    fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
+}
 
 function isValidYouTubeUrl(url) {
-    return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i.test(url);
+    try {
+        const urlObj = new URL(url);
+        return ["youtube.com", "youtu.be"].some(domain => urlObj.hostname.includes(domain));
+    } catch {
+        return false;
+    }
 }
 
 function cleanYouTubeUrl(url) {
     const urlObj = new URL(url);
     return `https://www.youtube.com/watch?v=${urlObj.searchParams.get("v")}`;
 }
-
-const archiver = require("archiver");
 
 app.post("/download", async (req, res) => {
     let { url, format } = req.body;
@@ -39,24 +48,26 @@ app.post("/download", async (req, res) => {
     }
 
     url = cleanYouTubeUrl(url);
-    const outputPath = path.join(__dirname, "downloads");
-    if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath);
-    }
 
     try {
         const metadata = await youtubedl(url, { dumpSingleJson: true });
         const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
         
+        if (!title) {
+            return res.status(500).json({ error: "No se pudo obtener el título del video." });
+        }
+
+        const fileBasePath = path.join(DOWNLOADS_DIR, title);
+        
         if (format === "both") {
-            const mp4File = path.join(outputPath, `${title}.mp4`);
-            const mp3File = path.join(outputPath, `${title}.mp3`);
-            
+            const mp4File = `${fileBasePath}.mp4`;
+            const mp3File = `${fileBasePath}.mp3`;
+            const zipFile = `${fileBasePath}.zip`;
+
             await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" });
             await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
-            
-            const zipPath = path.join(outputPath, `${title}.zip`);
-            const output = fs.createWriteStream(zipPath);
+
+            const output = fs.createWriteStream(zipFile);
             const archive = archiver("zip", { zlib: { level: 9 } });
 
             archive.pipe(output);
@@ -66,33 +77,26 @@ app.post("/download", async (req, res) => {
 
             output.on("close", () => {
                 res.setHeader("X-Filename", `${title}.zip`);
-                res.download(zipPath, `${title}.zip`, () => {
-                    fs.unlinkSync(zipPath);
-                    fs.unlinkSync(mp4File);
-                    fs.unlinkSync(mp3File);
+                res.download(zipFile, `${title}.zip`, () => {
+                    [zipFile, mp4File, mp3File].forEach(file => fs.existsSync(file) && fs.unlinkSync(file));
                 });
             });
         } else {
-            let filename, outputFile, options;
-
-            if (format === "mp4") {
-                filename = `${title}.mp4`;
-                outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" };
-            } else {
-                filename = `${title}.mp3`;
-                outputFile = path.join(outputPath, filename);
-                options = { output: outputFile, extractAudio: true, audioFormat: "mp3" };
-            }
+            const isMp4 = format === "mp4";
+            const filePath = `${fileBasePath}.${isMp4 ? "mp4" : "mp3"}`;
+            const options = isMp4
+                ? { output: filePath, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" }
+                : { output: filePath, extractAudio: true, audioFormat: "mp3" };
 
             await youtubedl(url, options);
 
-            res.setHeader("X-Filename", filename);
-            res.download(outputFile, filename, () => {
-                fs.unlinkSync(outputFile);
+            res.setHeader("X-Filename", path.basename(filePath));
+            res.download(filePath, path.basename(filePath), () => {
+                fs.existsSync(filePath) && fs.unlinkSync(filePath);
             });
         }
     } catch (error) {
+        console.error("Error en la descarga:", error);
         res.status(500).json({ error: "Error al descargar el archivo" });
     }
 });
