@@ -9,7 +9,7 @@ const archiver = require("archiver");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
-const DOWNLOADS_DIR = path.join(__dirname, "downloads");
+const DOWNLOADS_DIR = "/tmp";
 
 app.use(express.json({ limit: "1mb" }));
 app.use(cors());
