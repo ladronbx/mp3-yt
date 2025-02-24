@@ -7,6 +7,19 @@ const fs = require("fs");
 const rateLimit = require("express-rate-limit");
 const archiver = require("archiver");
 
+const ytDlpBinary = path.join(__dirname, "yt-dlp");
+
+async function ensureYtDlp() {
+    if (!fs.existsSync(ytDlpBinary)) {
+        console.log("⚡ Descargando yt-dlp...");
+        await YTDlpWrap.downloadFromGithub(ytDlpBinary);
+        console.log("✅ yt-dlp instalado correctamente.");
+    } else {
+        console.log("✔️ yt-dlp ya está instalado.");
+    }
+}
+ensureYtDlp();
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 const DOWNLOADS_DIR = "/tmp";
