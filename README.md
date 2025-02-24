@@ -86,13 +86,13 @@ node server.js
 ```
 📢 Si todo está bien, deberías ver en la terminal:  
 ```
-Servidor corriendo en http://localhost:3000
+Servidor corriendo en http://localhost:10000
 ```
 
 ---
 
 ### 5️⃣ **Usar la Aplicación**  
-1️⃣ **Abre tu navegador** y ve a **http://localhost:3000**  
+1️⃣ **Abre tu navegador** y ve a **http://localhost:10000**  
 2️⃣ **Pega un enlace de YouTube** que tengas derecho a utilizar 🎞️  
 3️⃣ **Si es un video**, presiona "Descargar MP3" 🔽  
 4️⃣ **Si es una playlist**, la aplicación te guiará en la descarga múltiple 🖥️  
