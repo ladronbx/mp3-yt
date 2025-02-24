@@ -1,7 +1,7 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const youtubedl = require("youtube-dl-exec");
+const YTDlpWrap = require("yt-dlp-wrap").default;
 const path = require("path");
 const fs = require("fs");
 const rateLimit = require("express-rate-limit");
@@ -26,6 +26,8 @@ app.use("/download", limiter);
 if (!fs.existsSync(DOWNLOADS_DIR)) {
     fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 }
+
+const ytDlp = new YTDlpWrap();
 
 function isValidYouTubeUrl(url) {
     console.log("🔍 Verificando URL:", url);
@@ -61,10 +63,11 @@ app.post("/download", async (req, res) => {
 
     try {
         console.log("📄 Obteniendo metadatos del video...");
-        const metadata = await youtubedl(url, { dumpSingleJson: true });
-        console.log("🎥 Metadatos obtenidos - Título:", metadata.title);
+        const metadata = await ytDlp.execPromise([url, "--dump-json"]);
+        const metadataJson = JSON.parse(metadata);
+        console.log("🎥 Metadatos obtenidos - Título:", metadataJson.title);
 
-        const title = metadata.title.replace(/[<>:"/\\|?*]+/g, "");
+        const title = metadataJson.title.replace(/[<>:"/\\|?*]+/g, "");
         console.log("📛 Título del video:", title);
 
         if (!title) {
@@ -81,9 +84,9 @@ app.post("/download", async (req, res) => {
             const mp3File = `${fileBasePath}.mp3`;
             const zipFile = `${fileBasePath}.zip`;
 
-            await youtubedl(url, { output: mp4File, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" });
+            await ytDlp.execPromise([url, "-f", "mp4", "-o", mp4File]);
             console.log("🎬 Archivo MP4 descargado:", mp4File);
-            await youtubedl(url, { output: mp3File, extractAudio: true, audioFormat: "mp3" });
+            await ytDlp.execPromise([url, "-f", "bestaudio", "--extract-audio", "--audio-format", "mp3", "-o", mp3File]);
             console.log("🎶 Archivo MP3 descargado:", mp3File);
 
             const output = fs.createWriteStream(zipFile);
@@ -107,10 +110,10 @@ app.post("/download", async (req, res) => {
             const isMp4 = format === "mp4";
             const filePath = `${fileBasePath}.${isMp4 ? "mp4" : "mp3"}`;
             const options = isMp4
-                ? { output: filePath, format: "mp4", ffmpegLocation: "/usr/bin/ffmpeg" }
-                : { output: filePath, extractAudio: true, audioFormat: "mp3" };
+                ? ["-f", "mp4", "-o", filePath]
+                : ["-f", "bestaudio", "--extract-audio", "--audio-format", "mp3", "-o", filePath];
 
-            await youtubedl(url, options);
+            await ytDlp.execPromise([url, ...options]);
             console.log("📥 Archivo descargado:", filePath);
 
             res.setHeader("X-Filename", path.basename(filePath));
