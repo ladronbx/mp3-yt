@@ -272,10 +272,7 @@ Si no aparece ninguna ruta, agrégala manualmente:
    node server.js
    ```
 
----
 
-Si sigues teniendo problemas, revisa los logs de la consola y busca mensajes de error específicos. 🚀
-```
 ---
 
 ## 🌟 **Contribuciones**  
